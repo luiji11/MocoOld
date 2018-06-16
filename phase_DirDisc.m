@@ -42,8 +42,8 @@ try
 drw = Draw(false);
 
 % Stimulus
-dts = DotPop(   'numdots',100,...
-                'coherence', 50,...
+dts = DotPop(   'numdots',200,...
+                'coherence', 100,...
                 'maxwidth', drw.dispRect(3),...
                 'maxheight', drw.dispRect(4));% initialize dot population 
 
@@ -66,7 +66,9 @@ phaseTimeElapsed    = 0;        % total time elapsed
 stopLickDuration    = 1;        % must stop licking the reward spout for at least 200 ms for next trial to start
 turnSpeedThreshold  = 2;
 killTask            = false;
-dotDirOptions    = [0 180];
+sigDirOptions    = [0 180];
+
+
 
 %% TRAIN
 while (phaseTimeElapsed < phaseDuration) && (killTask == false)
@@ -77,9 +79,8 @@ while (phaseTimeElapsed < phaseDuration) && (killTask == false)
     displayCenterDot(drw, 3);
     %------------------------------------------------------------------
     % INITIALIZE TRIAL
-    dts.setSignalDotDirection(dotDirOptions(randi(2)));
-    dts.randomizeDotPosition(1:dts.numDots);  
-    dts.setDotTypeAtRandom;  
+    dts.signalDots_direction = sigDirOptions(randi(2)); 
+    dts.assignDotTypeRandomly;
     %------------------------------------------------------------------
     % DISPLAY MOVING DOTS, CHECK FOR WHEEL TURN, AND CHECK IF TURN IS
     % CORRECT
@@ -87,6 +88,7 @@ while (phaseTimeElapsed < phaseDuration) && (killTask == false)
     %------------------------------------------------------------------
     % IF CORRECT GIVE REWARD, WAIT FOR CONSUME, AND START NEW TRIAL  
     % OTHERWISE GO TO CORRECTION TRIAL
+
     if correctResponse && (killTask == false)
         rewardEvents(ard);
         killTask = waitForRewardConsumption(ard, 'lickint', stopLickDuration);
@@ -97,7 +99,7 @@ while (phaseTimeElapsed < phaseDuration) && (killTask == false)
     end    
     %------------------------------------------------------------------
     % CORRECTION TRIAL
-    while inCorrectionTrial && (killTask ==false)
+    while inCorrectionTrial && (killTask == false)
         disp('TIMEOUT!')
         displayLightsOnScreen(drw, 2);
         [correctResponse, killTask] = moveDotsAndReadResponse(drw, dts, whl, turnSpeedThreshold);

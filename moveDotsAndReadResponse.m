@@ -1,10 +1,10 @@
 function [correctResponse,...
           brokeWithEscButton] = moveDotsAndReadResponse(drw, dts, whl, turnSpeedThreshold)
     whl.readTurnSpeed;
-    brokeWithEscButton   = false;
-    correctResponse = [];
+    brokeWithEscButton  = false;
+    correctResponse     = false;
     while 1
-        Screen('FillOval', drw.windowPtr, dts.color, dts.rectList); 
+        Screen('FillOval', drw.windowPtr, dts.color, dts.getDotRectList); 
         drw.flipScreen;
 
         % update and save the current speed & direction of the wheel turn
@@ -17,7 +17,8 @@ function [correctResponse,...
             correctResponse = turnDirection == dts.signalDots_direction;
             break
         end        
-        dts.moveDots(1:dts.numDots, true); 
+        dts.moveDots; 
+        
         
         if strcmp(readKey, 'esc')
            disp('Experimenter pressed escape button');
