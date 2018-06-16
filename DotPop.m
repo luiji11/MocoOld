@@ -9,7 +9,7 @@ classdef DotPop < handle
     properties
         color       = [0 0 0];
         directionsOptions = 0:15:345; 
-        radius      = 12;
+        dotRadius      = 12;
         
         
         dots        = struct;        
@@ -42,7 +42,9 @@ classdef DotPop < handle
             for i = 1:numel(keyList)
                 switch keyList{i}
                     case 'numdots'
-                        obj.numDots  = valList{i};                            
+                        obj.numDots  = valList{i};  
+                    case 'dotradius'
+                        obj.dotRadius = valList{i};
                     case 'coherence'
                         obj.coherence= valList{i};
                     case 'maxwidth'
@@ -89,9 +91,14 @@ classdef DotPop < handle
         end
         
        function obj = setCoherence(obj, coherence)
-            obj.coherence   = coherence;   
-            obj = assignDotTypeRandomly(obj); % randomly assign dot to be a noise dot or signal dot  (based on coherence)
-            obj = createDotPaths(obj, 1:obj.numDots);            
+           if coherence > obj.numDots
+               coherence = obj.numDots;
+           end
+           % change coherence, assign dots to be part of signal or noise at
+           % random, then create dot paths again
+           obj.coherence   = coherence;   
+           obj = assignDotTypeRandomly(obj); 
+           obj = createDotPaths(obj, 1:obj.numDots);            
        end        
         
          function obj = assignDotTypeRandomly(obj)
@@ -113,10 +120,10 @@ classdef DotPop < handle
             for i = 1:obj.numDots
                 d = obj.dots(i);
                 idx = d.posIdx;
-                rectList(:,i) =[d.pathX(idx)-obj.radius;...
-                                d.pathY(idx)-obj.radius;...
-                                d.pathX(idx)+obj.radius;...
-                                d.pathY(idx)+obj.radius];             
+                rectList(:,i) =[d.pathX(idx)-obj.dotRadius;...
+                                d.pathY(idx)-obj.dotRadius;...
+                                d.pathX(idx)+obj.dotRadius;...
+                                d.pathY(idx)+obj.dotRadius];             
             end
 
         end
@@ -130,6 +137,12 @@ classdef DotPop < handle
             end
         end
 
+        function obj = createNewDotPop(obj)
+            sigDirOptions    = [0 180];
+            obj.signalDots_direction = sigDirOptions(randi(2)); 
+            obj.assignDotTypeRandomly;
+            obj.createDotPaths(1:obj.numDots);        
+        end
         function obj = incrementDotAge(obj, dotIds)
             for i = dotIds
                 obj.dots(i).age = obj.dots(i).age + 1;                       

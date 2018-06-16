@@ -74,11 +74,9 @@ sigDirOptions    = [0 180];
 while (phaseTimeElapsed < phaseDuration) && (killTask == false)
     
     %--------------------------------------------------------------------
-    %  DISPLAY CENTER DOT
+    %  DISPLAY CENTER DOT & INITIALIZE TRIAL
     PlaySound.doubleLowPitch;  
-    displayCenterDot(drw, 3);
-    %------------------------------------------------------------------
-    % INITIALIZE TRIAL
+    displayCenterDot(drw, 2);
     dts.signalDots_direction = sigDirOptions(randi(2)); 
     dts.assignDotTypeRandomly;
     %------------------------------------------------------------------

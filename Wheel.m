@@ -73,6 +73,20 @@ classdef Wheel < handle
             end
             
         end
+        
+        function winfo = wheelInfo(obj, varargin)
+            whl.readTurnSpeed;
+            winfo.turnSpeed           = obj.turnSpeed; 
+            winfo.turnDirection       = obj.turnDirection;
+            
+            if nargin == 1 
+                turnSpeedThreshold = 3;
+            elseif nargin == 2
+                turnSpeedThreshold = varargin{1};
+            end
+                
+            winfo.turnedWheel         = abs(winfo.turnSpeed) > turnSpeedThreshold;             
+        end
     
 
         
