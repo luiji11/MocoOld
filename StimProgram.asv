@@ -7,7 +7,7 @@ classdef StimProgram < handle
         dts        
         srv
         msgOptions = {  'pause',...
-                        'moco', 'newdirection', 'newcoherence',...
+                        'moco', 'newdotpop', 'setnumdots', 'setcoherence',...
                         'whitescreen', 'grayscreen',...
                         'finish'};
         msg
@@ -17,11 +17,6 @@ classdef StimProgram < handle
 
         function obj = StimProgram
             [obj.dts, obj.scr] = DotPop ;
-            if isempty(obj.scr)
-                obj.scr = StimScreen;
-            end
-            
-            
             obj.srv = StimServer; 
             commandwindow;
             obj.start;
@@ -35,16 +30,17 @@ classdef StimProgram < handle
                         obj.pause;
                     case 'moco'
                         obj.moco;
-                    case 'newdirection'
-                        obj.dts.setNewSignalDirectionAtRandom;
-                        obj.msg = 'moco';
-                    case 'newcoherence'
-                        obj.setcoherence;                        
+                    case 'newdotpop'
+                        obj.dts.createNewDotPop;
                         obj.msg = 'moco';
                     case 'whitescreen'
                         obj.coloredScreen([255 255 255]);
                     case 'grayscreen'
                         obj.coloredScreen([127 127 127]);  
+                    case 'setcoherence'
+                        obj.setcoherence;
+                    case 'setnumdots'
+                        obj.setnumdots;
                     case 'finish'
                         obj.finish 
                         break;
@@ -53,10 +49,8 @@ classdef StimProgram < handle
         end
         
         function obj = pause(obj)
-            tstring = cellfun(@(s) sprintf('\n%s', s) , obj.msgOptions, 'uniformoutput', false);
-            tstring = [tstring{:}];
             while true
-                obj.drawCenterText(sprintf('Waiting for commands:%s',tstring)) ;                 
+                obj.drawCenterText('PAUSED') ;                 
                 obj.scr.flipScreen; 
                 obj.msg = obj.srv.readMessageIfAvailable;
                 if any(strcmp(obj.msg, obj.msgOptions))
@@ -67,22 +61,43 @@ classdef StimProgram < handle
         
         function obj = setcoherence(obj)
             while true
-                obj.drawCenterText('Enter coherence [value from 0 to 1]...') ;                 
+                obj.drawCenterText('Enter # of Coherent dots...')                  
                 obj.scr.flipScreen;    
                 obj.msg = obj.srv.readMessageIfAvailable;
-                c= str2num(obj.msg);
-                if ~isempty(c) && ~isnan(c)
-                    numCoherentDots = round(c*obj.dts.numDots);
-                    obj.dts.setCoherence(numCoherentDots);
-                    obj.drawCenterText(sprintf('Coherence Set to %.02f',c))  ;                                   
+                if ~isempty(str2num(obj.msg))
+                    c= str2num(obj.msg);
+                    obj.dts.setCoherence(c);
+                    obj.drawCenterText(sprintf('Coherence Set to %d',c))  ;                                   
                     obj.scr.flipScreen;  
-                    pause(1.25)
+                    obj.msg = 'moco';
+                    pause(1.5)
                     break 
                 end 
             end          
         end
 
-
+        function obj = setnumdots(obj)
+            while true
+                obj.drawCenterText('Enter Dot Pop Size...')                
+                obj.scr.flipScreen;    
+                obj.msg = obj.srv.readMessageIfAvailable;
+                if ~isempty(str2double(obj.msg)) || ~nan
+                    c= str2double(obj.msg);
+                    obj.dts = DotPop('numdots', c,...
+                             'coherence', obj.dts.coherence,...
+                             'maxwidth',  obj.scr.dispRect(3), 'maxheight', obj.scr.dispRect(4),...
+                             'dotradius', obj.dts.dotRadius);
+                         
+                    Screen('DrawText', obj.scr.windowPtr, sprintf('Population size set to to %d',c), 20, 20, [255 255 100]);                 
+                    obj.scr.flipScreen;  
+                    obj.msg = 'moco';
+                    pause(2)
+                    break 
+                end 
+            end          
+        end
+        
+        
         function obj = moco(obj)
             Screen('FillRect', obj.scr.windowPtr, [127 127 127], obj.scr.dispRect);                        
             while true
@@ -109,10 +124,10 @@ classdef StimProgram < handle
         end
         
         
-        function obj = drawCenterText(obj, tstring)
+        function obj = drawCenterText(obj, string)
             Screen('TextSize', obj.scr.windowPtr, 15);                
-            Screen('FillRect', obj.scr.windowPtr, [0 0 0], obj.scr.dispRect);  
-            DrawFormattedText(obj.scr.windowPtr, tstring,'center', 'center', [255 0 0])     ;       
+            Screen('FillRect', obj.scr.windowPtr, [0 0 0], obj.scr.dispRect);        
+            Screen('DrawText', obj.scr.windowPtr, string, obj.scr.dispRect(3)/2, obj.scr.dispRect(4)/2, [255 255 100]); 
         end        
         
 

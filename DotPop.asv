@@ -13,13 +13,13 @@ classdef DotPop < handle
         
         
         dots        = struct;        
-        numDots           
-        coherence   
+        numDots     = 100;        
+        coherence   = 90;
         
         directionList
         
-        maxX  
-        maxY     
+        maxX       = 1920;
+        maxY       = 1080;
                 
         signalDots_Ids
         noiseDots_Ids
@@ -33,27 +33,13 @@ classdef DotPop < handle
     
     methods
         
-        function [obj, scr] = DotPop   
-            windowPtrs=Screen('Windows');
-            if isempty(windowPtrs)
-                scr = StimScreen;
-                obj.maxX  = scr.dispRect(3);
-                obj.maxY  = scr.dispRect(4);
-            else
-                [obj.maxX , obj.maxY]=Screen('WindowSize', windowPtrs(1));
-                scr=[];
-            end
-            % cover 20% of display with dots
-            % half of them are coherent
-            screenArea = obj.maxX * obj.maxY; 
-            dotArea = pi*obj.dotRadius^2 ;
-            obj.numDots = round((.20*screenArea)/dotArea);
-            obj.coherence  = round(.5*obj.numDots);   
-                
+        function [obj, scr] = DotPop(varargin)   
+            [obj, scr] = autoInitialtize(obj);
+                     
             obj.dots = repmat( struct('posIdx', [], 'rect', [], 'direction', [], 'age', 0, 'pathY', [], 'pathX', []), obj.numDots, 1);
-            setCoherence(obj, obj.coherence)   ;         
-            assignDotTypeRandomly(obj);            
-            createDotPaths(obj, 1:obj.numDots);                       
+            obj = setCoherence(obj, obj.coherence)   ;         
+            obj = assignDotTypeRandomly(obj);            
+            obj = createDotPaths(obj, 1:obj.numDots);                       
         end
   
         function obj = createDotPaths(obj, dotIds)
@@ -79,19 +65,18 @@ classdef DotPop < handle
         end
         
        function obj = setCoherence(obj, coherence)
-            if coherence > obj.numDots
-                coherence = obj.numDots;
-            elseif coherence < 1
-                coherence = 1;
-            end
-            % change coherence, assign dots to be part of signal or noise at
-            % random, then create dot paths again
-            obj.coherence   = coherence;   
-            obj = assignDotTypeRandomly(obj); 
-            obj = createDotPaths(obj, 1:obj.numDots);            
+           if coherence > obj.numDots
+               coherence = obj.numDots;
+           elseif coherence < 1
+               coherence = 1;
+           end
+           % change coherence, assign dots to be part of signal or noise at
+           % random, then create dot paths again
+           obj.coherence   = coherence;   
+           obj = assignDotTypeRandomly(obj); 
+           obj = createDotPaths(obj, 1:obj.numDots);            
        end        
         
-
          function obj = assignDotTypeRandomly(obj)
             dotIds                  = randperm(obj.numDots);
             obj.signalDots_Ids      = dotIds(1:obj.coherence);
@@ -128,16 +113,12 @@ classdef DotPop < handle
             end
         end
 
-        
-        function obj = setNewSignalDirectionAtRandom(obj)
+        function obj = createNewDotPop(obj)
             sigDirOptions    = [0 180];
-            obj.signalDots_direction = sigDirOptions(randi(2));
-            for i = obj.signalDots_Ids
-                obj.dots(i).direction = obj.signalDots_direction;
-            end            
-            obj.createDotPaths(obj.signalDots_Ids);                           
+            obj.signalDots_direction = sigDirOptions(randi(2)); 
+            obj.assignDotTypeRandomly;
+            obj.createDotPaths(1:obj.numDots);        
         end
-        
         function obj = incrementDotAge(obj, dotIds)
             for i = dotIds
                 obj.dots(i).age = obj.dots(i).age + 1;                       
@@ -154,6 +135,25 @@ classdef DotPop < handle
             obj.deadDot_Ids = find( [obj.dots(:).age] >= obj.lifetime ); 
         end
         
+        function [obj, scr] = autoInitialtize(obj)
+            windowPtrs=Screen('Windows');
+            if isempty(windowPtrs)
+                scr = StimScreen(true);
+                obj.maxX  = scr.dispRect(3);
+                obj.maxY  = scr.dispRect(4);
+            else
+                [obj.maxX , obj.maxY]=Screen('WindowSize', windowPtrs(1));
+                scr=[];
+                
+            end
+                % cover 20% of display with dots
+                % half of them are coherent
+                screenArea = obj.maxX * obj.maxY; 
+                dotArea = pi*obj.dotRadius^2 ;
+                obj.numDots = round((.20*screenArea)/dotArea);
+                obj.coherence  = round(.5*obj.numDots);            
+        
+        end
         
 
         

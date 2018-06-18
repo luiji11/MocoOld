@@ -19,7 +19,6 @@ classdef StimClient < handle
             fopen(obj.client);
             obj.status = 'open';
             disp('Contact made. Ready to control stimulus')   
-            
         end         
         
         function sendMessage(obj, message)
