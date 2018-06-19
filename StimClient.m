@@ -41,13 +41,13 @@ classdef StimClient < handle
             else
                  msg = '';
             end
-            
         end
         
         function obj = closeClient(obj)
             switch obj.status
                 case 'open'
                     fclose(obj.client);
+                    delete(obj.client);
                     obj.status = 'closed';
             end        
 

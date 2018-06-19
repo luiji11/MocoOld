@@ -34,7 +34,7 @@ classdef StimScreen < handle
         function obj = openWindow(obj)
             sca;
             if obj.pcID
-                rect = [1921 1 1921+obj.screenRect(3) obj.screenRect(4)] ;               
+                rect = [2000 500 3000 1200] ;               
             else
                 rect = [obj.screenRect(3)-400 obj.screenRect(4)-400 obj.screenRect(3) obj.screenRect(4)];
                 

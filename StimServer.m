@@ -33,7 +33,6 @@ classdef StimServer < handle
         end
         
         function msg = readMessageIfAvailable(obj)
-           
             if obj.server.BytesAvailable
                 numBytes = obj.server.BytesAvailable;
                 msg = cellstr(char(fread(obj.server,numBytes)'));
@@ -48,6 +47,7 @@ classdef StimServer < handle
             switch obj.status
                 case 'open'
                     fclose(obj.server);
+                    delete(obj.server);
                     obj.status = 'closed';
             end        
 

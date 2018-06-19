@@ -1,7 +1,7 @@
 classdef StimProgram < handle
     %UNTITLED4 Summary of this class goes here
     %   Detailed explanation goes here
-    
+     
     properties
         scr
         dts        
@@ -16,21 +16,25 @@ classdef StimProgram < handle
     methods
 
         function obj = StimProgram
-            [obj.dts, obj.scr] = DotPop ;
-            if isempty(obj.scr)
-                obj.scr = StimScreen;
+            try
+                obj.start;
+            catch ME                
+                if ~isempty(obj.scr)
+                    obj.scr.closeScreen
+                end
+                if ~isempty(obj.srv)
+                    obj.srv.closeServer                     
+                end
+                rethrow(ME)
             end
-            
-            
-            obj.srv = StimServer; 
-            commandwindow;
-            obj.start;
         end
         
         function start(obj)
-            obj.msg = 'pause';
+            obj.msg = 'waitingforclient';
             while true
                 switch obj.msg  
+                    case 'waitingforclient'
+                        obj.waitForClient
                     case 'pause'
                         obj.pause;
                     case 'moco'
@@ -51,6 +55,19 @@ classdef StimProgram < handle
                 end
             end
         end
+        
+        function obj = waitForClient(obj)
+            [obj.dts, obj.scr] = DotPop ;
+            obj.drawCenterText(sprintf('Waiting for client')) ;                 
+            obj.scr.flipScreen; 
+            commandwindow;
+            obj.srv = StimServer;        
+            obj.drawCenterText(sprintf('CONTACT MADE')) ;                 
+            obj.scr.flipScreen; 
+            obj.msg = 'pause';
+            pause(1.5)
+        end
+        
         
         function obj = pause(obj)
             tstring = cellfun(@(s) sprintf('\n%s', s) , obj.msgOptions, 'uniformoutput', false);
@@ -97,6 +114,7 @@ classdef StimProgram < handle
             end                
         
         end
+        
         function obj = coloredScreen(obj, color)
             Screen('FillRect', obj.scr.windowPtr, color, obj.scr.dispRect);
             while true
@@ -115,15 +133,16 @@ classdef StimProgram < handle
             DrawFormattedText(obj.scr.windowPtr, tstring,'center', 'center', [255 0 0])     ;       
         end        
         
-
-        
         function finish(obj)
             obj.scr.closeScreen
             obj.srv.closeServer 
             disp('Program Ended!!!')
-
         end        
     end
+     
+     
+     
+
     
 end
 
