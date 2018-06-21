@@ -128,14 +128,18 @@ classdef DotPop < handle
             end
         end
 
-        
-        function obj = setNewSignalDirectionAtRandom(obj)
-            sigDirOptions    = [0 180];
-            obj.signalDots_direction = sigDirOptions(randi(2));
+        function obj = setNewSignalDirection(obj, newDir)
+            obj.signalDots_direction = newDir;        
             for i = obj.signalDots_Ids
-                obj.dots(i).direction = obj.signalDots_direction;
+                obj.dots(i).direction = newDir;
             end            
-            obj.createDotPaths(obj.signalDots_Ids);                           
+            obj.createDotPaths(obj.signalDots_Ids);       
+        end
+        
+        function newDir = setNewSignalDirectionAtRandom(obj)
+            sigDirOptions    = [0 180];
+            newDir = sigDirOptions(randi(2));            
+            obj.setNewSignalDirection(newDir)                        
         end
         
         function obj = incrementDotAge(obj, dotIds)
@@ -153,14 +157,6 @@ classdef DotPop < handle
         function obj = check4DeadDots(obj) % check which dots exceeded their lifetime
             obj.deadDot_Ids = find( [obj.dots(:).age] >= obj.lifetime ); 
         end
-        
-        
-
-        
-
- 
-        
-
         
         
     end
